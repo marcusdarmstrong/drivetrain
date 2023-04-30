@@ -8,11 +8,11 @@ export const params = {
   cadence: 'c',
 };
 
-export function useIndexedSearchParamNavigationCallback(index, callback) {
+export function useIndexedSearchParamNavigationCallback(index: number, callback: (...params: unknown[]) => string) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  return useCallback((...parameters) => {
+  return useCallback((...parameters: unknown[]) => {
     const updated = new URLSearchParams();
     let encounteredIndex = 0;
     searchParams.forEach((value, key) => {
@@ -35,12 +35,12 @@ export function useIndexedSearchParamNavigationCallback(index, callback) {
   }, [router, pathname, searchParams, index, callback]);
 }
 
-export function useSearchParamNavigationCallback(param, callback) {
+export function useSearchParamNavigationCallback(param: string, callback: (...params: unknown[]) => string) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  return useCallback((...parameters) => {
-    const updated = new URLSearchParams(searchParams);
+  return useCallback((...parameters: unknown[]) => {
+    const updated = new URLSearchParams(searchParams as any as URLSearchParams);
     updated.set(param, callback(...parameters));
     router.push(`${pathname}?${updated.toString()}`);
   }, [router, pathname, searchParams, param, callback]); 

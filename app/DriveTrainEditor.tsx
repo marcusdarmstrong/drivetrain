@@ -9,13 +9,12 @@ import CadenceSelector from './CadenceSelector'
 import WheelSelector from './WheelSelector'
 import DriveTrainDeleter from './DriveTrainDeleter';
 
-import { serializeDrivetrain } from './marshalling';
+import { serializeDrivetrain, type Drivetrain, type Cassette, type Chainring, type Wheel } from './marshalling';
 import { useIndexedSearchParamNavigationCallback } from './navigation';
 
-function useSetCassetteCallback(drivetrain) {
+function useSetCassetteCallback(drivetrain: Drivetrain) {
   const { cassette } = drivetrain;
-  return useCallback((callback) => {
-    console.log("hello")
+  return useCallback((callback: (oldCassette: Cassette) => Cassette) => {
     return serializeDrivetrain({
       ...drivetrain, 
       cassette: callback(cassette),
@@ -23,9 +22,9 @@ function useSetCassetteCallback(drivetrain) {
   }, [drivetrain, cassette]);
 }
 
-function useSetChainringCallback(drivetrain) {
+function useSetChainringCallback(drivetrain: Drivetrain) {
   const { chainring } = drivetrain;
-  return useCallback((callback) => {
+  return useCallback((callback: (oldChainring: Chainring) => Chainring) => {
     return serializeDrivetrain({
       ...drivetrain, 
       chainring: callback(chainring),
@@ -33,9 +32,9 @@ function useSetChainringCallback(drivetrain) {
   }, [drivetrain, chainring]);
 }
 
-function useSetWheelCallback(drivetrain) {
+function useSetWheelCallback(drivetrain: Drivetrain) {
   const { wheel } = drivetrain;
-  return useCallback((callback) => {
+  return useCallback((callback: (oldWheel: Wheel) => Wheel) => {
     return serializeDrivetrain({
       ...drivetrain, 
       wheel: callback(wheel),
@@ -43,11 +42,14 @@ function useSetWheelCallback(drivetrain) {
   }, [drivetrain, wheel]);
 }
 
-export default function DriveTrainEditor({ index, drivetrain }) {
+export default function DriveTrainEditor({ index, drivetrain }: { index: number, drivetrain: Drivetrain }) {
   const { cassette, chainring, wheel } = drivetrain;
 
+  // @ts-expect-error: This is a TODO
   const setCassette = useIndexedSearchParamNavigationCallback(index, useSetCassetteCallback(drivetrain));
+  // @ts-expect-error: This is a TODO
   const setChainring = useIndexedSearchParamNavigationCallback(index, useSetChainringCallback(drivetrain));
+  // @ts-expect-error: This is a TODO
   const setWheel = useIndexedSearchParamNavigationCallback(index, useSetWheelCallback(drivetrain));
 
   return (

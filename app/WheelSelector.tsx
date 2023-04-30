@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { Button } from './ui';
 
+import type { Wheel } from './marshalling';
+
 const ISO_WHEEL_SIZES = {
   "29er/700c (ISO 622)": 622,
   "27.5/650b (ISO 584)": 584,
@@ -10,7 +12,9 @@ const ISO_WHEEL_SIZES = {
 
 const WHEEL_SIZE_LOOKUP = Object.fromEntries(Object.entries(ISO_WHEEL_SIZES).map(([k, v]) => [v, k]));
 
-function WheelEditor({ initialTire, initialSize, setWheel }) {
+type WheelSetter = (oldWheel: Wheel) => Wheel;
+
+function WheelEditor({ initialTire, initialSize, setWheel }: { initialTire: number, initialSize: number, setWheel: (newWheel: Wheel) => unknown }) {
   const [tire, setTire] = useState(initialTire);
   const [size, setSize] = useState(initialSize);
 
@@ -26,7 +30,7 @@ function WheelEditor({ initialTire, initialSize, setWheel }) {
   );
 }
 
-export default function WheelSelector({ wheel, setWheel }) {
+export default function WheelSelector({ wheel, setWheel }: { wheel: Wheel, setWheel: (setter: WheelSetter) => unknown }) {
   const [editing, setEditing] = useState(false);
 
   return (
@@ -37,9 +41,9 @@ export default function WheelSelector({ wheel, setWheel }) {
       </div>
       {editing
         ? <WheelEditor initialTire={wheel.tire} initialSize={wheel.size} setWheel={
-          (newWheel) => {
+          (newWheel: Wheel) => {
             setEditing(false);
-            setWheel(_ => newWheel);
+            setWheel((_: Wheel) => newWheel);
           }}/>
         : (
           <div className="flex justify-between">

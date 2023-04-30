@@ -3,23 +3,27 @@
 import { useState, useCallback } from 'react';
 import { Button } from './ui';
 
-function CogCreator({ addCog }) {
+import type { Cassette } from './marshalling';
+
+function CogCreator({ addCog }: { addCog: (cog: string) => unknown }) {
   const [cog, setCog] = useState('9');
   return (
     <>
       <input className="bg-slate-400" type="number" min={9} max={60} onChange={(evt) => setCog(evt.target.value)} value={cog}/>
-      <Button type="button" onClick={() => addCog(cog)}>Add cog</Button>
+      <Button onClick={() => addCog(cog)}>Add cog</Button>
     </>
   );
 }
 
-function CassetteEditor({ initialCassette, saveCassette }) {
+type CassetteSetter = (oldCassette: Cassette) => Cassette;
+
+function CassetteEditor({ initialCassette , saveCassette }: { initialCassette: Cassette, saveCassette: (newCassette: Cassette) => unknown }) {
   const [adding, setAdding] = useState(false);
   const [cassette, setCassette] = useState(initialCassette);
 
-  const addCog = useCallback((newCog) => {
+  const addCog = useCallback((newCog: string) => {
     setCassette(
-      (cogs) => 
+      (cogs: Cassette) => 
         [...new Set(
           [...cogs, parseInt(newCog, 10)]
         )].sort((a, b) => a - b)
@@ -27,9 +31,9 @@ function CassetteEditor({ initialCassette, saveCassette }) {
     setAdding(false);
   }, []);
 
-  const removeCog = useCallback((toRemove) => {
+  const removeCog = useCallback((toRemove: number) => {
     setCassette(
-      (cogs) => cogs.filter(cog => cog !== toRemove)
+      (cogs: Cassette) => cogs.filter(cog => cog !== toRemove)
     );
   }, []);
 
@@ -44,13 +48,13 @@ function CassetteEditor({ initialCassette, saveCassette }) {
       </ol>
       {adding
         ? <CogCreator addCog={addCog} />
-        : <Button type="button" onClick={() => setAdding(true)}>Add a Cog</Button>}
+        : <Button onClick={() => setAdding(true)}>Add a Cog</Button>}
       <Button onClick={() => saveCassette(cassette)}>Save</Button>
     </>
   );
 }
 
-export default function CassetteSelector({ cassette, setCassette }) {
+export default function CassetteSelector({ cassette, setCassette }: { cassette: Cassette, setCassette: (setter: CassetteSetter) => unknown }) {
   const [editing, setEditing] = useState(false);
 
 	return (
@@ -60,12 +64,12 @@ export default function CassetteSelector({ cassette, setCassette }) {
         <Button onClick={() => setEditing(true)}>Edit</Button>
       </div>
       {editing 
-        ? <CassetteEditor initialCassette={cassette} saveCassette={(newCassette) => {
+        ? <CassetteEditor initialCassette={cassette} saveCassette={(newCassette: Cassette) => {
           setEditing(false);
-          setCassette(_ => newCassette);
+          setCassette((_: Cassette) => newCassette);
         }} />
         : <ol>
-          {cassette.map(cog => (
+          {cassette.map((cog: number) => (
             <li className="inline-block p-1" key={cog}>
               {cog}
             </li>

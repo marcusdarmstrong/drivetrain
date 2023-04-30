@@ -1,9 +1,9 @@
-export const parseCadence = (serialized) => {
+export const parseCadence = (serialized: string): PartialCadence => {
   if (serialized === undefined || serialized === null || serialized === '') {
     return { min: null, max: null };
   }
   try {
-    const cadenceSpec = serialized.split('-').map(rpm => {
+    const cadenceSpec = serialized.split('-').map((rpm: string) => {
       if (rpm.length > 0) {
         return parseInt(rpm, 10);
       }
@@ -19,20 +19,56 @@ export const parseCadence = (serialized) => {
   }
 };
 
-export const realizeCadence = (cadence) => {
+export type Drivetrain = {
+  readonly cassette: Cassette,
+  readonly chainring: Chainring,
+  readonly wheel: Wheel,
+};
+
+export type PartialDrivetrain = {
+  readonly cassette: Cassette,
+  readonly chainring: Chainring,
+  readonly wheel: PartialWheel,
+};
+
+export type Cadence = {
+  readonly min: number,
+  readonly max: number,
+};
+
+export type PartialCadence = {
+  readonly min: null | number,
+  readonly max: null | number,
+};
+
+export type Wheel = {
+  readonly tire: number,
+  readonly size: number,
+};
+
+export type PartialWheel = {
+  readonly tire: null | number,
+  readonly size: null | number,
+};
+
+export type Cassette = ReadonlyArray<number>;
+export type Chainring = ReadonlyArray<number>;
+
+
+export const realizeCadence = (cadence: PartialCadence): Cadence => {
   return {
     min: cadence.min ?? 85,
     max: cadence.max ?? 110,
   };
 }
 
-export const realizeDrivetrain = (drivetrain) => {
+export const realizeDrivetrain = (drivetrain: Partial<Drivetrain>): Drivetrain => {
   return {
-    cassette: drivetrain.cassette?.length > 0
-      ? drivetrain.cassette
+    cassette: drivetrain.cassette?.length ?? 0 > 0
+      ? drivetrain.cassette as Cassette
       : [11, 12, 13, 14, 15, 17, 19, 21, 24, 27, 30, 34],
-    chainring: drivetrain.chainring?.length > 0 
-      ? drivetrain.chainring
+    chainring: drivetrain.chainring?.length ?? 0 > 0 
+      ? drivetrain.chainring as Chainring
       : [34, 50],
     wheel: {
       tire: drivetrain.wheel?.tire ?? 28,
@@ -41,15 +77,15 @@ export const realizeDrivetrain = (drivetrain) => {
   }
 }
 
-const parseCassette = (serialized) => {
+const parseCassette = (serialized: string): Cassette => {
   return serialized.split('-').map(cog => parseInt(cog, 10)).filter(Boolean).sort((a, b) => a - b);
 };
 
-const parseChainring = (serialized) => {
+const parseChainring = (serialized: string): Chainring => {
   return serialized.split('-').map(ring => parseInt(ring, 10)).filter(Boolean).sort((a, b) => a - b);
 };
 
-const parseWheel = (serialized) => {
+const parseWheel = (serialized: string): PartialWheel => {
   const wheelSpec = serialized.split('-').map(slice => {
     if (slice.length > 0) {
       return parseInt(slice, 10);
@@ -62,7 +98,7 @@ const parseWheel = (serialized) => {
   };
 };
 
-export const parseDrivetrain = (serialized) => {
+export const parseDrivetrain = (serialized: string): PartialDrivetrain | null => {
   try {
     const split = serialized.split('_');
     return {
@@ -76,7 +112,7 @@ export const parseDrivetrain = (serialized) => {
   }
 };
 
-const serializeCassette = (cassette) => {
+const serializeCassette = (cassette: Cassette): string => {
   const literalSerialization = cassette.join('-');
   if (literalSerialization === '11-12-13-14-15-17-19-21-24-27-30-34'){
     return '';
@@ -84,7 +120,7 @@ const serializeCassette = (cassette) => {
   return literalSerialization;
 };
 
-const serializeChainring = (chainring) => {
+const serializeChainring = (chainring: Chainring): string => {
   const literalSerialization = chainring.join('-');
   if (literalSerialization === '34-50') {
     return '';
@@ -92,7 +128,7 @@ const serializeChainring = (chainring) => {
   return literalSerialization;
 };
 
-export const serializeCadence = (cadence) => {
+export const serializeCadence = (cadence: Cadence): string => {
   if (cadence.min !== null || cadence.max !== null) {
     return `${
       cadence.min === 85 ? '' : cadence.min ?? ''
@@ -103,14 +139,14 @@ export const serializeCadence = (cadence) => {
   return '';
 };
 
-const serializeWheel = (wheel) => {
+const serializeWheel = (wheel: Wheel): string => {
   if (wheel.tire !== undefined || wheel.size !== undefined) {
     return `${wheel.tire ?? ''}-${wheel.size ?? ''}`;
   }
   return '';
 };
 
-export const serializeDrivetrain = (drivetrain) => {
+export const serializeDrivetrain = (drivetrain: Drivetrain): string => {
   return `${
     serializeCassette(drivetrain.cassette)
   }_${

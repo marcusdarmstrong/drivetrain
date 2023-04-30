@@ -3,10 +3,12 @@
 import { useState, useCallback } from 'react';
 
 import { useSearchParamNavigationCallback, params } from './navigation';
-import { serializeCadence } from './marshalling';
+import { serializeCadence, type Cadence } from './marshalling';
 import { Button } from './ui';
 
-function CadenceEditor({ initialMin, initialMax, setCadence }) {
+type CadenceSetter = (oldCadence: Cadence) => Cadence;
+
+function CadenceEditor({ initialMin, initialMax, setCadence }: { initialMin: number, initialMax: number, setCadence: (setter: CadenceSetter) => unknown }) {
   const [max, setMax] = useState(initialMax);
   const [min, setMin] = useState(initialMin);
 
@@ -16,15 +18,16 @@ function CadenceEditor({ initialMin, initialMax, setCadence }) {
       <input type="range" min="50" max={max} value={min} onChange={evt => setMin(parseInt(evt.target.value, 10))} />
       {max}
       <input type="range" min={min} max="150" value={max} onChange={evt => setMax(parseInt(evt.target.value, 10))} />
-      <Button onClick={() => setCadence(_ => ({ min, max }))}>Save</Button>
+      <Button onClick={() => setCadence((_: Cadence) => ({ min, max }))}>Save</Button>
     </>
   );
 }
 
-export default function CadenceSelector({ cadence }) {
+export default function CadenceSelector({ cadence }: { cadence: Cadence }) {
   const [editing, setEditing] = useState(false);
 
-  const setCadence = useSearchParamNavigationCallback(params.cadence, useCallback((newCadence) => {
+  // @ts-expect-error: TODO
+  const setCadence = useSearchParamNavigationCallback(params.cadence, useCallback((newCadence: CadenceSetter) => {
     return serializeCadence(newCadence(cadence));
   }, [cadence]));
 

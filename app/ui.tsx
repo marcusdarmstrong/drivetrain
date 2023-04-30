@@ -1,4 +1,6 @@
-export function Button({ onClick, children }) {
+import type { ReactNode, MouseEventHandler } from 'react';
+
+export function Button({ onClick, children }: { onClick: MouseEventHandler<HTMLButtonElement>, children: ReactNode }) {
   return (
     <button
       type="button"

@@ -8,7 +8,7 @@ export default function DriveTrainCreator() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   return <Button onClick={() => {
-    const updated = new URLSearchParams(searchParams);
+    const updated = new URLSearchParams(searchParams as unknown as URLSearchParams);
     if (updated.getAll('d').length === 0) {
       updated.append('d', '__');
     }

@@ -2,24 +2,25 @@
 
 import { useState, useCallback } from 'react';
 import { Button } from './ui';
+import type { Chainring } from './marshalling';
 
-function RingCreator({ addRing }) {
+function RingCreator({ addRing }: { addRing: (ring: string) => unknown}) {
   const [ring, setRing] = useState('20');
   return (
     <>
       <input className="bg-slate-400" type="number" min={20} max={60} onChange={(evt) => setRing(evt.target.value)} value={ring}/>
-      <Button type="button" onClick={() => addRing(ring)}>Add ring</Button>
+      <Button onClick={() => addRing(ring)}>Add ring</Button>
     </>
   );
 }
 
-function ChainringEditor({ initialChainring, saveChainring }) {
+function ChainringEditor({ initialChainring, saveChainring }: { initialChainring: Chainring, saveChainring: (newChainring: Chainring) => unknown }) {
   const [adding, setAdding] = useState(false);
   const [chainring, setChainring] = useState(initialChainring);
 
-  const addRing = useCallback((newRing) => {
+  const addRing = useCallback((newRing: string) => {
     setChainring(
-      (chainrings) => 
+      (chainrings: Chainring) => 
         [...new Set(
           [...chainrings, parseInt(newRing, 10)]
         )].sort((a, b) => a - b)
@@ -27,16 +28,16 @@ function ChainringEditor({ initialChainring, saveChainring }) {
     setAdding(false);
   }, []);
 
-  const removeCog = useCallback((toRemove) => {
+  const removeCog = useCallback((toRemove: number) => {
     setChainring(
-      (chainrings) => chainrings.filter(ring => ring !== toRemove)
+      (chainrings: Chainring) => chainrings.filter((ring: number) => ring !== toRemove)
     );
   }, []);
 
   return (
     <>
       <ol>
-        {chainring.map(ring => (
+        {chainring.map((ring: number) => (
           <li className="inline-block p-1" key={ring}>
             <Button onClick={() => removeCog(ring)}>{ring}</Button>
           </li>
@@ -50,7 +51,9 @@ function ChainringEditor({ initialChainring, saveChainring }) {
   );
 }
 
-export default function ChainringSelector({ chainring, setChainring }) {
+type ChainringSetter = (oldChainring: Chainring) => Chainring;
+
+export default function ChainringSelector({ chainring, setChainring }: { chainring: Chainring, setChainring: (setter: ChainringSetter) => unknown }) {
   const [editing, setEditing] = useState(false);
 
   return (
@@ -60,7 +63,7 @@ export default function ChainringSelector({ chainring, setChainring }) {
         <Button onClick={() => setEditing(true)}>Edit</Button>
       </div>
       {editing 
-        ? <ChainringEditor initialChainring={chainring} saveChainring={(newChainring) => {
+        ? <ChainringEditor initialChainring={chainring} saveChainring={(newChainring: Chainring) => {
           setEditing(false);
           setChainring(_ => newChainring);
         }} />
