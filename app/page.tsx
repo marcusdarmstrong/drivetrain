@@ -4,6 +4,7 @@ import DriveTrainCreator from './DriveTrainCreator';
 import DriveTrainEditor from './DriveTrainEditor';
 import DriveTrainViewer from './DriveTrainViewer';
 import CadenceSelector from './CadenceSelector';
+import { Card, Spacer, Header, Box, Toolbar, Banner } from './ui';
 import { type Drivetrain, parseDrivetrain, parseCadence, realizeCadence, realizeDrivetrain } from './marshalling';
 
 export default function Home({ searchParams }: { searchParams: { [param: string]: string | string[] }}) {
@@ -29,22 +30,26 @@ export default function Home({ searchParams }: { searchParams: { [param: string]
   );
 
   return (
-    <main className="m-8">
-      <h1 className="text-2xl">Drivetrain calculator</h1>
-      <div className="flex m-8">
-        <div className="w-1/2">
-          <CadenceSelector cadence={cadence} />
-        </div>
-        <div className="w-1/2 flex flex-row-reverse"> 
-          <DriveTrainCreator />
-        </div>
+    <main className="m-4 min-h-screen">
+      <div className="gap-2 flex flex-wrap">
+        <Banner>
+          <div className="flex w-full items-center gap-4 flex-wrap lg:flex-nowrap">
+            <Header level="h1">
+              <span className="inline-block p-2">Drivetrain calculator</span>
+              <Toolbar>
+                <DriveTrainCreator />
+              </Toolbar>
+            </Header>
+            <CadenceSelector cadence={cadence} />
+          </div>
+        </Banner>
+        {drivetrains.map((drivetrain: Drivetrain, index: number) =>
+          <Card key={index}>
+            <DriveTrainEditor drivetrain={drivetrain} index={index} />
+            <Spacer><DriveTrainViewer cadence={cadence} drivetrain={drivetrain} /></Spacer>
+          </Card>
+        )}
       </div>
-      {drivetrains.map((drivetrain: Drivetrain, index: number) =>
-        <div className="m-8" key={index}>
-          <DriveTrainEditor drivetrain={drivetrain} index={index} />
-          <DriveTrainViewer cadence={cadence} drivetrain={drivetrain} />
-        </div>
-      )}
     </main>
   )
 }

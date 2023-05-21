@@ -1,12 +1,13 @@
 'use client';
 
-import { useSearchParamNavigationCallback } from './navigation';
-import { Button } from './ui';
+import { useIndexedSearchParamNavigationCallback } from './navigation';
+import { IconButton } from './ui';
+import { Trash } from './icons';
 
 const deletionReducer = () => null; 
 export default function DriveTrainDeleter({ index }: { index: number }) {
   // @ts-expect-error: TODO
-  const callback = useSearchParamNavigationCallback(index, deletionReducer);
-  return <Button onClick={callback}>Remove this drivetrain</Button>;
+  const callback = useIndexedSearchParamNavigationCallback(index, deletionReducer);
+  return <IconButton size={2} onClick={callback} alt="Delete this drivetrain"><Trash /></IconButton>;
 }
 

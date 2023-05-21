@@ -1,57 +1,53 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from './ui';
-
+import { Header, Toolbar, Box, IconButton, Button, Row } from './ui';
+import { Gear, Check } from './icons';
 import type { Wheel } from './marshalling';
 
 const ISO_WHEEL_SIZES = {
-  "29er/700c (ISO 622)": 622,
-  "27.5/650b (ISO 584)": 584,
+  "700c": 622,
+  "650b": 584,
 };
 
 const WHEEL_SIZE_LOOKUP = Object.fromEntries(Object.entries(ISO_WHEEL_SIZES).map(([k, v]) => [v, k]));
 
 type WheelSetter = (oldWheel: Wheel) => Wheel;
 
-function WheelEditor({ initialTire, initialSize, setWheel }: { initialTire: number, initialSize: number, setWheel: (newWheel: Wheel) => unknown }) {
+export default function WheelSelector({ wheel, setWheel }: { wheel: Wheel, setWheel: (setter: WheelSetter) => unknown }) {
+  const { tire: initialTire, size: initialSize } = wheel;
+  const [editing, setEditing] = useState(false);
   const [tire, setTire] = useState(initialTire);
   const [size, setSize] = useState(initialSize);
 
   return (
-    <>
-      {tire}
-      <input type="range" min="18" max="110" value={tire} onChange={evt => setTire(parseInt(evt.target.value, 10))} />
-      <select onChange={evt => setSize(parseInt(evt.target.value, 10))} value={size}>
+    <Box>
+      <Header level="h3">
+        <span>Wheel</span>
+        <Toolbar>
+          {editing
+            ? <IconButton alt="Save" size={1} onClick={() => {
+              setEditing(false);
+              setWheel((_: Wheel) => ({ tire, size }));
+            }}><Check /></IconButton>
+            : <IconButton alt="Edit" size={1} onClick={() => setEditing(true)}><Gear /></IconButton>
+          }
+        </Toolbar>
+      </Header>
+      {editing
+        ? <Row>
+      {tire}mm
+      <input className="w-32" type="range" min="18" max="110" value={tire} onChange={evt => setTire(parseInt(evt.target.value, 10))} />
+      <select className="inline-block px-2 bg-white" onChange={evt => setSize(parseInt(evt.target.value, 10))} value={size}>
         {Object.entries(ISO_WHEEL_SIZES).map(([key, value]) => <option key={key} value={value}>{key}</option>)}
       </select>
-      <Button onClick={() => setWheel({ tire, size })}>Save</Button>
-    </>
-  );
-}
-
-export default function WheelSelector({ wheel, setWheel }: { wheel: Wheel, setWheel: (setter: WheelSetter) => unknown }) {
-  const [editing, setEditing] = useState(false);
-
-  return (
-    <div>
-      <div className="flex">
-        <h3 className="text-xl leading-10">Wheel</h3>
-        <Button onClick={() => setEditing(true)}>Edit</Button>
-      </div>
-      {editing
-        ? <WheelEditor initialTire={wheel.tire} initialSize={wheel.size} setWheel={
-          (newWheel: Wheel) => {
-            setEditing(false);
-            setWheel((_: Wheel) => newWheel);
-          }}/>
+    </Row>
         : (
-          <div className="flex justify-between">
-            <span>Tire: {wheel.tire}mm</span>
-            <span>Size: {WHEEL_SIZE_LOOKUP[wheel.size]}</span>
+          <div>
+            {wheel.tire}mm&nbsp;&times;&nbsp;{WHEEL_SIZE_LOOKUP[wheel.size]}
           </div>
         )
       }
-    </div>
+    </Box>
   );
 };

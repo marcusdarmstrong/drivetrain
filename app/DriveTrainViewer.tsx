@@ -1,12 +1,20 @@
 'use client';
 
 import type { Cadence, Drivetrain } from './marshalling';
-
+import { Header, Row } from './ui';
+import { useState, useId } from 'react';
 type Gear = [number, number, number, number, number, boolean];
 
 const mmPerMinuteToMph = 60 / 1000 / 1609.34;
 
-const round = (num: number, dec: number = 2) => Math.round(num * (10 ** dec)) / (10 ** dec);
+const round = (num: number, dec: number = 2) => {
+  let str = String(Math.round(num * (10 ** dec)) / (10 ** dec));
+  if (!str.includes('.')) {
+    str = `${str}.`;
+  }
+
+  return str.padEnd(str.indexOf('.') + 1 + dec, '0');
+}
 
 const isCrossChained = (ringIndex: number, cogIndex: number, ringCount: number, cogCount: number) => {
   if (ringCount === 2) {
@@ -26,14 +34,19 @@ const isCrossChained = (ringIndex: number, cogIndex: number, ringCount: number, 
 };
 
 const isUsefulGear = (ratio: number, previousRatio: number | null, nextRatio: number | null) => {
-  let useful = previousRatio === null && nextRatio === null;
   if (previousRatio) {
-    useful ||= (previousRatio - ratio) / ratio > .05;
+    const usefulVsPrev = (previousRatio - ratio) / ratio > .05;
+    if (nextRatio) {
+      const usefulVsNext = (ratio - nextRatio) / ratio > .05;
+      return usefulVsPrev && usefulVsNext;
+    }
+    return usefulVsPrev;
   }
   if (nextRatio) {
-    useful ||= (ratio - nextRatio) / ratio > .05;
+    const usefulVsNext = (ratio - nextRatio) / ratio > .05;
+    return usefulVsNext;
   }
-  return useful;
+  return true;
 };
 
 const getUsefulGearCount = (gears: Gear[], shiftPoint: number) => {
@@ -99,39 +112,55 @@ export default function DriveTrainViewer({ cadence, drivetrain }: { cadence: Cad
     });
   }
 
-  let usefulCount = 0;
-  gears.filter((gear: Gear) => gear[5]).forEach((gear: Gear, index: number) => {
-    if (isUsefulGear(gear[2], gears[index - 1]?.[2] ?? null, gears[index + 1]?.[2] ?? null)) {
-      usefulCount++;
-    }
-  });
+  const usefulCount = gears.filter((gear: Gear) => gear[5]).length;
 
+  const [ showNonfunctionalGears, setShowNonfunctionalGears ] = useState(false);
+  const labelId = useId();
   return (
-    <div>
-      <h3 className="text-xl">Gearing <span className="text-sm">({usefulCount} functional gears)</span></h3>
-      <div className="flex">
-        <ol className="w-1/2 text-xs">
+    <div className="w-full">
+      <Header level="h3"><span>Gearing <span className="text-sm">({usefulCount} functional gears)</span></span></Header>
+      {usefulCount !== gears.length
+        ? (
+          <Row>
+            <div>
+              <input id={labelId} type="checkbox" checked={showNonfunctionalGears} onChange={() => setShowNonfunctionalGears(prev => !prev)} />
+              <label htmlFor={labelId} className="inline-block p-1">Show non-functional gears</label>
+            </div>
+          </Row>
+        )
+        : null}
+      <table className="w-full text-xs leading-none">
+        <thead>
+          <tr>
+            <th className="text-left">Gearing</th>
+            <th className="text-left">Ratio</th>
+            <th>Speed (mph)</th></tr>
+        </thead>
+        <tbody>
         {
-          gears.map((gear: Gear, idx: number) => {
-            return <li key={idx} className={gear[5] ? '' : 'text-slate-700'}>
-              {gear[0]} x {gear[1]} = {round(gear[2])}
-              &nbsp;=&gt; {round(gear[3], 1)}..{round(gear[4], 1)}mph
-              </li>
+          gears.filter((gear) => showNonfunctionalGears || gear[5] ).map((gear: Gear, idx: number) => {
+            return (
+              <tr key={idx} className={gear[5] ? '' : 'text-slate-400'}>
+                <td className="w-16">{gear[0]}&nbsp;&times;&nbsp;{gear[1]}</td>
+                <td className="w-12">{round(gear[2])}</td>
+                <td>
+                  <span className="inline-block text-right" style={{
+                    width: `${gear[3] * 2}%`,
+                  }}>{round(gear[3], 1)}&nbsp;</span>
+                  <span 
+                    className={`inline-block ${gear[5] ? 'bg-green-600' : "bg-green-600/20"}`}
+                    style={{
+                      width: `${(gear[4] - gear[3]) * 2}%`,
+                      height: `.5rem`,
+                    }}></span>
+                  <span className="inline-block text-left">&nbsp;{round(gear[4], 1)}</span>
+                </td>
+              </tr>
+            );
           })
         }
-        </ol>
-        <div className="w-1/2">
-          {
-            gears.map((gear: Gear, idx: number) => (
-              <div key={idx} style={{
-                width: `${(gear[4] - gear[3]) * 2}%`,
-                marginLeft: `${gear[3] * 2}%`,
-                height: `1rem`,
-              }} className={gear[5] ? 'bg-sky-500' : "bg-sky-500/20"}></div>
-            ))
-          }
-        </div>
-      </div>
+        </tbody>
+      </table>
     </div>
   );
 };

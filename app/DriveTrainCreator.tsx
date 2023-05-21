@@ -7,7 +7,7 @@ export default function DriveTrainCreator() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  return <Button onClick={() => {
+  return <Button variant="pill" onClick={() => {
     const updated = new URLSearchParams(searchParams as unknown as URLSearchParams);
     if (updated.getAll('d').length === 0) {
       updated.append('d', '__');

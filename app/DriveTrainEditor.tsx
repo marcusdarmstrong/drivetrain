@@ -9,6 +9,8 @@ import CadenceSelector from './CadenceSelector'
 import WheelSelector from './WheelSelector'
 import DriveTrainDeleter from './DriveTrainDeleter';
 
+import { Row, Box, Header, Toolbar } from './ui';
+
 import { serializeDrivetrain, type Drivetrain, type Cassette, type Chainring, type Wheel } from './marshalling';
 import { useIndexedSearchParamNavigationCallback } from './navigation';
 
@@ -53,19 +55,24 @@ export default function DriveTrainEditor({ index, drivetrain }: { index: number,
   const setWheel = useIndexedSearchParamNavigationCallback(index, useSetWheelCallback(drivetrain));
 
   return (
-    <div className="flex">
-      <div className="w-2/5">
-        <CassetteSelector cassette={cassette} setCassette={setCassette} />
-      </div>
-      <div className="w-1/5">
-        <ChainringSelector chainring={chainring} setChainring={setChainring} />
-      </div>
-      <div className="w-1/5">
-        <WheelSelector wheel={wheel} setWheel={setWheel} />
-      </div>
-      <div className="w-1/5">
-        <DriveTrainDeleter index={index} />
-      </div>
-    </div>
+    <>
+      <Header level="h2">
+        <span>Drivetrain</span>
+        <Toolbar>
+          <DriveTrainDeleter index={index} />
+        </Toolbar>
+      </Header>
+      <Row>
+        <div className="w-full lg:w-1/2">
+          <CassetteSelector cassette={cassette} setCassette={setCassette} />
+        </div>
+        <div className="w-full lg:w-1/4">
+          <ChainringSelector chainring={chainring} setChainring={setChainring} />
+        </div>
+        <div className="w-full lg:w-1/4">
+          <WheelSelector wheel={wheel} setWheel={setWheel} />
+        </div>
+      </Row>
+    </>
   );
 };

@@ -58,7 +58,7 @@ export type Chainring = ReadonlyArray<number>;
 export const realizeCadence = (cadence: PartialCadence): Cadence => {
   return {
     min: cadence.min ?? 85,
-    max: cadence.max ?? 110,
+    max: cadence.max ?? 100,
   };
 }
 
@@ -129,11 +129,14 @@ const serializeChainring = (chainring: Chainring): string => {
 };
 
 export const serializeCadence = (cadence: Cadence): string => {
+  if (cadence.min === 85 && cadence.max === 100) {
+    return '';
+  }
   if (cadence.min !== null || cadence.max !== null) {
     return `${
       cadence.min === 85 ? '' : cadence.min ?? ''
     }-${
-      cadence.max === 110 ? '' : cadence.max ?? ''
+      cadence.max === 100 ? '' : cadence.max ?? ''
     }`;
   }
   return '';
