@@ -57,10 +57,11 @@ export default function DriveTrainEditor({ index, drivetrain }: { index: number,
   return (
     <>
       <Header level="h2">
-        <span>Drivetrain</span>
+        <span>Drivetrain {index + 1}</span>
+        { index >= 1 &&
         <Toolbar>
           <DriveTrainDeleter index={index} />
-        </Toolbar>
+        </Toolbar> }
       </Header>
       <Row>
         <div className="w-full lg:w-1/2">
