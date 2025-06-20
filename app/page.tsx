@@ -7,11 +7,12 @@ import CadenceSelector from './CadenceSelector';
 import { Card, Spacer, Header, Box, Toolbar, Banner } from './ui';
 import { type Drivetrain, parseDrivetrain, parseCadence, realizeCadence, realizeDrivetrain } from './marshalling';
 
-export default function Home({ searchParams }: { searchParams: { [param: string]: string | string[] }}) {
+export default async function Home({ searchParams }: { searchParams: Promise<{ [param: string]: string | string[] }>}) {
+  const params = await searchParams;
   const drivetrains: Drivetrain[] = (
-    Array.isArray(searchParams.d) 
-      ? searchParams.d 
-      : ('d' in searchParams ? [searchParams.d] : [])
+    Array.isArray(params.d) 
+      ? params.d 
+      : ('d' in params ? [params.d] : [])
   )
     .map((d: string) => parseDrivetrain(d))
     .filter(Boolean)
@@ -25,7 +26,7 @@ export default function Home({ searchParams }: { searchParams: { [param: string]
 
   const cadence = realizeCadence(
     parseCadence(
-      Array.isArray(searchParams.c) ? searchParams.c[0] : searchParams.c
+      Array.isArray(params.c) ? params.c[0] : params.c
     )
   );
 

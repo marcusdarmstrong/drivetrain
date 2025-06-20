@@ -41,7 +41,7 @@ export function Button({ variant = 'base', onClick, children }: { variant: 'base
 export function Card({ children }: { children: ReactNode }) {
   return (
     <div
-      className="rounded-2xl bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 p-1 shadow-xl"
+      className="rounded-2xl bg-linear-to-r from-pink-500 via-red-500 to-yellow-500 p-1 shadow-xl"
     >
       <div className="rounded-xl bg-white p-2 sm:p-3 lg:p-4 gap-2 flex flex-wrap">
         {children}
@@ -53,7 +53,7 @@ export function Card({ children }: { children: ReactNode }) {
 export function Banner({ children }: { children: ReactNode }) {
   return (
     <div
-      className={`w-full rounded-2xl bg-gradient-to-br from-green-500 via-emerald-500 to-lime-500 shadow-xl p-3 gap-2 flex flex-wrap`}
+      className={`w-full rounded-2xl bg-linear-to-br from-green-500 via-emerald-500 to-lime-500 shadow-xl p-3 gap-2 flex flex-wrap`}
     >
       {children}
     </div>

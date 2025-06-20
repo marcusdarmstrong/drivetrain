@@ -1,16 +1,14 @@
 import cassetteData from './cassettes.json';
 import { useReducer, useMemo } from 'react';
 
-type Brand = 'Shimano' | 'SRAM' | 'Campagnolo';
-type Series = string;
-type Model = string;
+export type Brand = 'Shimano' | 'SRAM' | 'Campagnolo';
+export type Speed = '11' | '12' | '13';
 type Range = string;
 type State = {
   brand: null | Brand,
-  series: null | Series,
-  model: null | Model,
+  speed: null | Speed,
   range: null | Range,
-  cogs: null | number[],
+  cogs: readonly number[],
   adding: boolean,
 };
 
@@ -18,11 +16,8 @@ type Action = {
   type: 'select brand',
   brand: Brand,
 } | {
-  type: 'select series',
-  series: Series,
-} | {
-  type: 'select model',
-  model: Model,
+  type: 'select speed',
+  speed: Speed,
 } | {
   type: 'select range',
   range: Range,
@@ -38,60 +33,52 @@ type Action = {
 
 type CassetteSpec = {
   brand: Brand,
-  series: Series,
-  model: null | Model,
+  speed: Speed,
   range: Range,
 };
 
-function getCogs({brand, series, model, range}: CassetteSpec) {
-  return brand === 'Campagnolo'
-    ? cassetteData[brand][series][range]
-    : cassetteData[brand][series][model][range];
+type CassetteData = {
+  [brand in Brand]: {
+    [speed in Speed]: {
+      [range: Range]: readonly number[];
+    };
+  };
+};
+
+function getCogs({ brand, speed, range }: CassetteSpec) {
+  return (cassetteData as CassetteData)[brand][speed][range]!;
 }
 
-function reducer({ brand, series, model, range, cogs, adding }: State, action: Action) {
+function reducer({ brand, speed, range, cogs, adding }: State, action: Action): State {
   switch (action.type) {
     case 'select brand':
       return ({
         brand: action.brand,
-        series: null,
-        model: null,
+        speed: null,
         range: null,
-        cogs: null,
+        cogs: [],
         adding: false,
       });
-    case 'select series':
+    case 'select speed':
       return ({
         brand,
-        series: action.series,
-        model: null,
+        speed: action.speed,
         range: null,
-        cogs: null,
-        adding: false,
-      });
-    case 'select model':
-      return ({
-        brand,
-        series,
-        model: action.model,
-        range: null,
-        cogs: null,
+        cogs: [],
         adding: false,
       });
     case 'select range':
       return ({
         brand,
-        series,
-        model,
+        speed,
         range: action.range,
-        cogs: getCogs({ brand, series, model, range: action.range }),
+        cogs: getCogs({ brand: brand!, speed: speed!, range: action.range }),
         adding: false,
       });
     case 'create cog':
       return ({
         brand,
-        series,
-        model,
+        speed,
         range,
         cogs, 
         adding: true,
@@ -99,8 +86,7 @@ function reducer({ brand, series, model, range, cogs, adding }: State, action: A
     case 'add cog':
       return ({
         brand,
-        series,
-        model,
+        speed,
         range,
         cogs: [...new Set([...cogs, action.cog].sort())], 
         adding: false,
@@ -108,24 +94,30 @@ function reducer({ brand, series, model, range, cogs, adding }: State, action: A
     case 'remove cog':
       return ({
         brand,
-        series,
-        model,
+        speed,
         range,
         cogs: cogs.filter((cog) => cog !== action.cog), 
         adding: false,
       });
-    default:
-      return state;
+    default: {
+      // const unreachable: never = action.type;
+      throw new Error("unreachable");
+    }
   }
 }
 
-export function useCassetteReducer(initialCassette) {
-  const [state, dispatch] = useReducer(reducer, {
+export function useCassetteReducer(initialCassette: { cogs: readonly number[] }): [State, {
+  selectBrand(brand: Brand): void,
+  selectSpeed(speed: Speed): void,
+  selectRange(range: Range): void,
+  createCog():void,
+  addCog(cog: number): void,
+  removeCog(cog: number): void,
+}] {
+  const [state, dispatch] = useReducer<State, [Action]>(reducer, {
     brand: null,
-    series: null,
-    model: null,
+    speed: null,
     range: null,
-    cogs: null,
     ...initialCassette,
     adding: false,
   });
@@ -136,11 +128,8 @@ export function useCassetteReducer(initialCassette) {
       selectBrand(brand: Brand) {
         dispatch({ type: 'select brand', brand});
       },
-      selectSeries(series: Series) {
-        dispatch({ type: 'select series', series });
-      },
-      selectModel(model: Model) {
-        dispatch({ type: 'select model', model });
+      selectSpeed(speed: Speed) {
+        dispatch({ type: 'select speed', speed });
       },
       selectRange(range: Range) {
         dispatch({ type: 'select range', range });
@@ -154,6 +143,6 @@ export function useCassetteReducer(initialCassette) {
       removeCog(cog: number) {
         dispatch({ type: 'remove cog', cog });
       },
-    }
+    } as const
   ], [state, dispatch])
 }

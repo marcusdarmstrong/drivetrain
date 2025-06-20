@@ -5,13 +5,13 @@ import { Box, IconButton, Button, Toolbar, Header, BadgeButton, ActionBadge, Row
 import { Gear, Plus, X, Check } from './icons';
 import type { Cassette } from './marshalling';
 
-import { useCassetteReducer } from './useCassetteReducer';
+import { useCassetteReducer, type Brand, type Speed } from './useCassetteReducer';
 
 import cassetteData from './cassettes.json';
 
 const brands = Object.keys(cassetteData);
 
-function CogCreator({ addCog }: { addCog: (cog: string) => unknown }) {
+function CogCreator({ addCog }: { addCog: (cog: number) => unknown }) {
   const [cog, setCog] = useState('9');
   return (
     <ActionBadge onClick={() => addCog(parseInt(cog, 10))} action={<Plus />}>
@@ -25,7 +25,7 @@ type CassetteSetter = (oldCassette: Cassette) => Cassette;
 export default function CassetteSelector({ cassette: initialCassette, setCassette: setInitialCassette }: { cassette: Cassette, setCassette: (setter: CassetteSetter) => unknown }) {
   const [editing, setEditing] = useState(false);
 
-  const [{ brand, series, model, range, adding, cogs }, dispatch] = useCassetteReducer({ cogs: initialCassette });
+  const [{ brand, speed, range, adding, cogs }, dispatch] = useCassetteReducer({ cogs: initialCassette });
 
 	return (
 		<Box>
@@ -47,38 +47,21 @@ export default function CassetteSelector({ cassette: initialCassette, setCassett
             <Row>Select a Cassette</Row>
             <Row>
               <div className="flex w-full gap-2 flex-wrap">
-                <select className="inline-block px-2 bg-white border border-slate-100" value={brand} onChange={(evt) => dispatch.selectBrand(evt.target.value)}>
-                  <option value={null}>Custom</option>
-                  {brands.map(brandName => <option value={brandName}>{brandName}</option>)}
+                <select className="inline-block px-2 bg-white border border-slate-100" value={brand ?? undefined} onChange={(evt) => dispatch.selectBrand(evt.target.value as Brand)}>
+                  <option>Custom</option>
+                  {brands.map(brandName => <option value={brandName} key={brandName}>{brandName}</option>)}
                 </select>
                 {brand !== null && (
                   <>
-                    <select className="inline-block px-2 bg-white border border-slate-100" value={series} onChange={(evt) => dispatch.selectSeries(evt.target.value)}>
-                      <option value={null}>Series</option>
-                      {Object.keys(cassetteData[brand]).map(seriesName => <option value={seriesName}>{seriesName}</option>)}
+                    <select className="inline-block px-2 bg-white border border-slate-100" value={speed ?? undefined} onChange={(evt) => dispatch.selectSpeed(evt.target.value as Speed)}>
+                      <option>Speed</option>
+                      {Object.keys(cassetteData[brand]).map(speedName => <option value={speedName} key={speedName}>{speedName} speed</option>)}
                     </select>
-                    {series !== null &&
-                      (brand === 'Campagnolo'
-                        ? (
-                          <select className="inline-block px-2 bg-white border border-slate-100" value={range} onChange={(evt) => dispatch.selectRange(evt.target.value)}>
-                            <option value={null}>Range</option>
-                            {Object.keys(cassetteData[brand][series]).map(rangeName => <option value={rangeName}>{rangeName}</option>)}
-                          </select>
-                        )
-                        : (
-                          <>
-                            <select className="inline-block px-2 bg-white border border-slate-100" value={model} onChange={(evt) => dispatch.selectModel(evt.target.value)}>
-                              <option value="Model">Model</option>
-                              {Object.keys(cassetteData[brand][series]).map(modelName => <option value={modelName}>{modelName}</option>)}
-                            </select>
-                            {model !== null && (
-                              <select className="inline-block px-2 bg-white border border-slate-100" value={range} onChange={(evt) => dispatch.selectRange(evt.target.value)}>
-                                <option value={null}>Range</option>
-                                {Object.keys(cassetteData[brand][series][model]).map(rangeName => <option value={rangeName}>{rangeName}</option>)}
-                              </select>
-                            )}
-                          </>
-                        )
+                    {speed !== null && (
+                      <select className="inline-block px-2 bg-white border border-slate-100" value={range ?? undefined} onChange={(evt) => dispatch.selectRange(evt.target.value)}>
+                        <option>Range</option>
+                        {Object.keys(cassetteData[brand][speed]).map(rangeName => <option value={rangeName} key={rangeName}>{rangeName}</option>)}
+                      </select> 
                     )}
                   </>
                 )}
